@@ -32,42 +32,89 @@ The cipher can, be adapted to an alphabet with any number of letters. All arithm
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-void main()
-{
-    char plain[10],cipher[10];
-    int key,i,length;
-    int result;
-    printf("\n Enter the plain text:");
-    scanf("%s", plain);
-    printf("\n Enter the key value:");
-    scanf("%d", &key);
-    printf("\n \n \t PLAIN TEXt: %s", plain);
-    printf("\n \n \t ENCRYPTED TEXT:");
-    for(i=0, length = strlen(plain); i<length; i++)
-    {      
-        cipher[i]=plain[i] + key;
-        if (isupper(plain[i]) && (cipher[i] > 'Z'))
-        cipher[i] = cipher[i] - 26;
-        if (islower(plain[i]) && (cipher[i] > 'z'))
-        cipher[i] = cipher[i] - 26;
-        printf("%c", cipher[i]);
+
+#define SIZE 2  // Size of the key matrix (2x2 for simplicity)
+
+int keyMatrix[SIZE][SIZE];
+
+void toUpperCase(char *str) {
+    for (int i = 0; str[i]; i++) {
+        str[i] = toupper(str[i]);
     }
-    printf("\n \n \t AFTER DECRYPTION : ");
-    for(i=0;i<length;i++)
-    {  
-        plain[i]=cipher[i]-key;
-        if(isupper(cipher[i])&&(plain[i]<'A'))
-        plain[i]=plain[i]+26;
-        if(islower(cipher[i])&&(plain[i]<'a'))
-        plain[i]=plain[i]+26;
-        printf("%c",plain[i]);
+}
+
+void removeSpaces(char *str) {
+    int count = 0;
+    for (int i = 0; str[i]; i++) {
+        if (str[i] != ' ') {
+            str[count++] = str[i];
+        }
     }
-    getchar();
+    str[count] = '\0';
+}
+
+void getKeyMatrix(char *key) {
+    int k = 0;
+    toUpperCase(key);
+    removeSpaces(key);
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            keyMatrix[i][j] = key[k++] - 'A';
+        }
+    }
+}
+
+void encrypt(char *text, char *cipher) {
+    toUpperCase(text);
+    removeSpaces(text);
+    int len = strlen(text);
+    if (len % SIZE != 0) {
+        text[len++] = 'X';  // Padding if needed
+        text[len] = '\0';
+    }
+    
+    for (int i = 0; i < len; i += SIZE) {
+        for (int row = 0; row < SIZE; row++) {
+            int sum = 0;
+            for (int col = 0; col < SIZE; col++) {
+                sum += keyMatrix[row][col] * (text[i + col] - 'A');
+            }
+            cipher[i + row] = (sum % 26) + 'A';
+        }
+    }
+    cipher[len] = '\0';
+}
+
+void printKeyMatrix() {
+    printf("Key Matrix:\n");
+    for (int i = 0; i < SIZE; i++) {
+        for (int j = 0; j < SIZE; j++) {
+            printf("%d ", keyMatrix[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+int main() {
+    char key[SIZE * SIZE + 1], text[100], cipher[100];
+    
+    printf("Enter key (4 letters): ");
+    scanf("%s", key);
+    getKeyMatrix(key);
+    printKeyMatrix();
+    
+    printf("Enter plaintext: ");
+    scanf("%s", text);
+    
+    encrypt(text, cipher);
+    printf("Ciphertext: %s\n", cipher);
+    
+    return 0;
 }
 ```
 
 ## OUTPUT:
-![Screenshot 2025-03-27 082721](https://github.com/user-attachments/assets/d5c12d39-6968-4dfa-b620-7f87d29a3de5)
+![Screenshot 2025-03-27 084525](https://github.com/user-attachments/assets/670939e2-ce02-4612-bcf4-81c7abef1b85)
 
 ## RESULT:
 Thus the above given Hill Cipher program is executed successfully
